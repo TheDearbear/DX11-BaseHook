@@ -18,43 +18,29 @@ HRESULT PRESENT_CALL Base::Hooks::Present(IDXGISwapChain* thisptr, UINT SyncInte
 			pBackBuffer->Release();
 			Data::oWndProc = (WNDPROC)SetWindowLongPtr(Data::hWindow, GWLP_WNDPROC, (LONG_PTR)WndProc);
 
-			ImGui::CreateContext();
-			ImGuiIO& io = ImGui::GetIO();
-			io.ConfigFlags = ImGuiConfigFlags_NoMouseCursorChange;
+			igCreateContext(NULL);
+			ImGuiIO* io = igGetIO();
+			io->ConfigFlags = ImGuiConfigFlags_NoMouseCursorChange;
 			ImGui_ImplWin32_Init(Data::hWindow);
 			ImGui_ImplDX11_Init(Data::pDxDevice11, Data::pContext);
 			Data::InitImGui = true;
 		}
 	}
 
-	if (!Data::InitImGui) return Data::oPresent(thisptr, SyncInterval, Flags);
+	if (!Data::InitImGui || !Data::ShowMenu || !Base::Data::OnFrame)
+		return Data::oPresent(thisptr, SyncInterval, Flags);
 
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
-	ImGui::NewFrame();
+	igNewFrame();
 
-	if (Data::ShowMenu)
-	{
-		ImGui::Begin("ImGui Window");
-		ImGui::Text("Test ImGUI Window");
-		if (ImGui::Button("Detach"))
-		{
-			ImGui::End();
-			ImGui::EndFrame();
-			ImGui::Render();
-			Data::pContext->OMSetRenderTargets(1, &Data::pMainRenderTargetView, NULL);
-			ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-			Base::Detach();
-			return Data::oPresent(thisptr, SyncInterval, Flags);
-		}
-		ImGui::End();
-	}
+	Base::Data::OnFrame();
 
-	ImGui::EndFrame();
-	ImGui::Render();
+	igEndFrame();
+	igRender();
 
 	Data::pContext->OMSetRenderTargets(1, &Data::pMainRenderTargetView, NULL);
-	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+	ImGui_ImplDX11_RenderDrawData(igGetDrawData());
 
 	return Data::oPresent(thisptr, SyncInterval, Flags);
 }

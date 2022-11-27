@@ -35,7 +35,7 @@ bool Base::Hooks::Shutdown()
 	{
 		ImGui_ImplDX11_Shutdown();
 		ImGui_ImplWin32_Shutdown();
-		ImGui::DestroyContext();
+		igDestroyContext(NULL);
 	}
 
 	mem::in::detour_restore(Data::pPresent, (mem::byte_t*)Data::oPresent, Data::szPresent);

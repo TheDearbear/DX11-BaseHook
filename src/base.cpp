@@ -21,9 +21,9 @@ mem::size_t             Base::Data::szPresent = 19;
 #endif
 UINT                    Base::Data::WmKeys[0xFF];
 bool                    Base::Data::Detached   = false;
-bool                    Base::Data::ShowMenu   = true;
+bool                    Base::Data::ShowMenu   = false;
 bool                    Base::Data::InitImGui  = false;
-
+FrameCallback			Base::Data::OnFrame = (FrameCallback)NULL;
 
 //Functions
 

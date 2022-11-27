@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "base.h"
+#include "IUnityInterface.h"
+#include <cassert>
 
 DWORD WINAPI MainThread(LPVOID lpThreadParameter)
 {
@@ -18,23 +20,45 @@ DWORD WINAPI ExitThread(LPVOID lpThreadParameter)
 	return TRUE;
 }
 
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
+// Function from https://stackoverflow.com/a/2396380
+static HMODULE GetThisDllHandle()
 {
-	switch (dwReason)
+	MEMORY_BASIC_INFORMATION info;
+	size_t len = VirtualQueryEx(GetCurrentProcess(), (void*)GetThisDllHandle, &info, sizeof(info));
+	assert(len == sizeof(info));
+	return len ? (HMODULE)info.AllocationBase : NULL;
+}
+
+
+extern "C"
+{
+	// == Unity Functions ==
+
+	// On Load
+	void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API UnityPluginLoad(IUnityInterfaces* interfaces)
 	{
-	case DLL_PROCESS_ATTACH:
-		CreateThread(nullptr, 0, MainThread, hModule, 0, nullptr);
-		break;
-	case DLL_PROCESS_DETACH:
-		if(!Base::Data::Detached)
-			CreateThread(nullptr, 0, ExitThread, hModule, 0, nullptr);
-		break;
-	case DLL_THREAD_ATTACH:
-		break;
-	case DLL_THREAD_DETACH:
-		break;
-	default:
-		break;
+		CreateThread(nullptr, 0, MainThread, GetThisDllHandle(), 0, nullptr);
 	}
-	return TRUE;
+
+	// On Unload
+	void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API UnityPluginUnload()
+	{
+		if (!Base::Data::Detached)
+			CreateThread(nullptr, 0, ExitThread, nullptr, 0, nullptr);
+	}
+
+	// == Custom Control Functions ==
+
+	// Show ImGui on screen
+	void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API ShowImGui(int boolean)
+	{
+		Base::Data::ShowMenu = boolean != 0;
+	}
+
+	// Set function which will be called on every frame of imgui rendering
+	void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API SetFrameCallback(FrameCallback callback)
+	{
+		if (callback)
+			Base::Data::OnFrame = callback;
+	}
 }

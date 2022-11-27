@@ -1,7 +1,6 @@
 #include <pch.h>
 #include <base.h>
 
-extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK Base::Hooks::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if(uMsg == WM_KEYDOWN || uMsg == WM_KEYUP)
@@ -11,11 +10,8 @@ LRESULT CALLBACK Base::Hooks::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 	{
 		switch (wParam)
 		{
-		case Data::Keys::ToggleMenu:
+		case Data::ToggleMenuKey:
 			Data::ShowMenu = !Data::ShowMenu;
-			break;
-		case Data::Keys::DetachDll:
-			Base::Detach();
 			break;
 		}
 	}

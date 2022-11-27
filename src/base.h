@@ -46,12 +46,8 @@ namespace Base
 		extern bool                    Detached;
 		extern bool                    InitImGui;
 		extern bool                    ShowMenu;
-
-		namespace Keys
-		{
-			const UINT ToggleMenu = VK_INSERT;
-			const UINT DetachDll  = VK_END;
-		}
+		extern FrameCallback		   OnFrame;
+		const  UINT                    ToggleMenuKey = VK_HOME;
 	}
 
 	namespace Hooks
